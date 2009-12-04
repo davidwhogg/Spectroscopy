@@ -1,0 +1,146 @@
+\documentclass[12pt]{article}
+\usepackage{amssymb,amsmath,color,hyperref}
+\definecolor{linkcolor}{rgb}{0,0,0.25}
+\hypersetup{
+  colorlinks=true,        % false: boxed links; true: colored links
+  linkcolor=linkcolor,    % color of internal links
+  citecolor=linkcolor,    % color of links to bibliography
+  filecolor=linkcolor,    % color of file links
+  urlcolor=linkcolor      % color of external links
+}
+\newcommand{\hmatrix}[1]{\boldsymbol{#1}}
+\newcommand{\Amatrix}{\hmatrix{A}}
+\newcommand{\pixels}{\hmatrix{p}}
+\newcommand{\biaspixels}{\hmatrix{p}^\mathrm{(bias)}}
+\newcommand{\darkpixels}{\hmatrix{p}^\mathrm{(dark)}}
+\newcommand{\arcpixels}{\hmatrix{p}^\mathrm{(arc)}}
+\newcommand{\flatpixels}{\hmatrix{p}^\mathrm{(flat)}}
+\newcommand{\bias}{\hmatrix{b}}
+\newcommand{\dark}{\hmatrix{d}}
+\newcommand{\flux}{\hmatrix{f}}
+\newcommand{\sky}{\hmatrix{s}}
+\newcommand{\arc}{\hmatrix{a}}
+\newcommand{\lamp}{\hmatrix{q}}
+\renewcommand{\angle}{\hmatrix{\theta}}
+\newcommand{\error}{\hmatrix{e}}
+\newcommand{\exptime}{t}
+
+\begin{document}
+
+In a modern spectrograph, light from fibers or slits is dispersed onto
+a two-dimensional CCD or CCD-like detector, with (usually) one
+direction on the detector corresponding to an angular displacement on
+the sky and another (usually) close-to-orthogonal direction
+corresponding to wavelength.  There are also slitless spectrographs,
+where one direction is a mixture of angular position and wavelength.
+The problem of spectroscopic data reduction is the problem of
+extracting the one-dimensional spectra---astronomical source flux
+densities as a function of wavelength---from the two-dimensional
+images.  There is a literature on ``optimal extraction'' of these
+one-dimensional spectra; the best extraction methods treat the
+two-dimensional image pixels as data to be fit by a model that
+consists of a one-dimensional spectrum laid out geometrically on the
+device and convolved with a two-dimensional point-spread function
+(which might be a function of the atmospheric seeing or the device
+properties or both).
+
+Although the optimal extraction literature solves some important
+problems, the hardest part of spectroscopic data reduction lies not in
+the extraction step but in the step of measuring or learning the
+geometric and point-spread functions themselves.  These functions have
+various names in the literature but they can be expressed with a
+single rectangular matrix $\Amatrix$:
+\begin{equation}
+\Delta\pixels = \exptime\,\Amatrix\,\flux \quad ,
+\end{equation}
+where the column vector $\pixels$ is a one-dimensional matrix listing
+all of the pixel values in the two-dimensional detector in some order,
+the column vector $\Delta\pixels$ lists the differential contribution
+to those pixels from an individual astronomical object (that is, the
+contribution over and above the bias, dark, sky, and any residual
+contributions from other spatially separated sources), the scalar
+$\exptime$ is the exposure time of the image, and the column vector
+$\flux$ is a list of the flux densities on a grid or list of
+wavelength values coming from that astronomical object.  In this
+description, each element of the matrix $\Amatrix$ gives the rate of
+change of a particular pixel in the two-dimensional detector in
+response to unit flux density at a particular wavelength from the
+source.  For simplicity, we will concentrate here on sources that are
+compact or else fiber or slit spectra with small spectral apertures.
+
+In what follows, we develop a method for inferring this matrix
+$\Amatrix$, which contains almost all of the calibration information
+necessary for the extraction of spectroscopic data.  Justifiable
+objective methods for inferring $\Amatrix$ are not currently in
+general use.  Most spectroscopic surveys use a combination of ad-hoc
+methods to estimate wavelength solutions, geometric trace functions,
+and point spread functions, and combine these to create approximations
+to $\Amatrix$.  Our goal is to produce a flexible objective
+methodology in which decisions are made by the data not by the
+investigators, and that will be extensible to a wide range of
+situations.  We will try to keep the discussion general, but where we
+need to get specific we will work with the data from the SDSS-III BOSS
+spectrographs.
+
+Our generative model for the data---for a science exposure or data
+taken of astronomical targets---is that the column vector $\pixels_i$
+of pixel values in exposure $i$ can be expressed as a sum of the
+following terms:
+\begin{equation}
+\pixels_i = \bias + \exptime_i\,\dark
+          + \exptime_i\,\sum_j \Amatrix_j\,\flux_j
+          + \exptime_i\,\sum_j \Amatrix_j\,\sky_i(\angle_j)
+          + \error_i \quad ,
+\end{equation}
+where the column vector $\bias$ lists the bias or zero-level for every
+pixel, the scalar $\exptime_i$ is the exposure time for exposure $i$,
+the column vector $\dark$ lists the dark current rate for every pixel,
+there is a rectangular matrix $\Amatrix_j$ for every spectroscopic
+aperture or fiber $j$, the column vector $\flux_j$ lists the flux
+density level for every wavelength in the wavelength grid for the
+source illuminating aperture $j$, the column vector $\sky_i(\angle_j)$
+lists the flux density (intensity integrated over the aperture) of the
+sky, which is permitted to be different for different exposures and to
+be a weak function of the angular position $\angle_j$ of aperture $j$,
+and the column vector $\error_i$ lists the errors or residuals away
+from the model in this exposure $i$.
+
+There are also bias, dark, arc, and flat frames, which in our model
+are generated by
+\begin{eqnarray}\displaystyle
+\biaspixels_i & = & \bias 
+                + \error_i \quad ,\\
+\darkpixels_i & = & \bias + \exptime_i\,\dark
+                + \error_i \quad ,\\
+\arcpixels_i  & = & \bias + \exptime_i\,\dark
+                + \exptime_i\,\sum_j \Amatrix_j\,\arc(\angle_j)
+                + \error_i \quad ,\\
+\flatpixels_i & = & \bias + \exptime_i\,\dark
+                + \exptime_i\,\sum_j \Amatrix_j\,\lamp(\angle_j)
+                + \error_i \quad ,
+\end{eqnarray}
+where the error vector $\error_i$ will be different for every frame,
+presumably drawn from a distribution function that depends on
+illumination but is known at some level, the column vector
+$\arc(\angle_j)$ lists the flux density values for an arc lamp,
+probably modeled as a mixture of narrow emission lines at known
+wavelengths, but permitted to vary in intensities slowly with the
+angular position $\angle_j$ of aperture $j$, and the column vector
+$\lamp(\angle_j)$ lists the flux density values for a flat-field lamp,
+again with slow angular variations.
+
+Our problem is to infer from these data---science exposures, biases,
+darks, arcs, and flats---all of the matrices $\Amatrix_j$ for all of
+the apertures $j$.
+
+We will assume smoothness in various things.
+
+We will specialize to BOSS spectra for now.
+
+We will assume that each plate is not independent but has $\Amatrix$
+drawn from some compact distribution.
+
+We will assume that lamps and skies and arcs are not infinitely
+variable from plate to plate and night to night.
+
+\end{document}

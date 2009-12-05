@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage{amssymb,amsmath,color,hyperref}
+\usepackage{amssymb,amsmath,mathrsfs,color,hyperref}
 \definecolor{linkcolor}{rgb}{0,0,0.25}
 \hypersetup{
   colorlinks=true,        % false: boxed links; true: colored links
@@ -8,8 +8,12 @@
   filecolor=linkcolor,    % color of file links
   urlcolor=linkcolor      % color of external links
 }
+\newcommand{\inverse}[1]{{#1}^{-1}}
+\newcommand{\transpose}[1]{{#1}^{\scriptscriptstyle \top}}
 \newcommand{\hmatrix}[1]{\boldsymbol{#1}}
 \newcommand{\Amatrix}{\hmatrix{A}}
+\newcommand{\zero}{\hmatrix{0}}
+\newcommand{\identity}{\hmatrix{0}}
 \newcommand{\pixels}{\hmatrix{p}}
 \newcommand{\biaspixels}{\hmatrix{p}^\mathrm{(bias)}}
 \newcommand{\darkpixels}{\hmatrix{p}^\mathrm{(dark)}}
@@ -18,15 +22,20 @@
 \newcommand{\bias}{\hmatrix{b}}
 \newcommand{\dark}{\hmatrix{d}}
 \newcommand{\flux}{\hmatrix{f}}
+\newcommand{\fluxLSF}{\hmatrix{\tilde{f}}}
 \newcommand{\sky}{\hmatrix{s}}
 \newcommand{\arc}{\hmatrix{a}}
 \newcommand{\lamp}{\hmatrix{q}}
 \renewcommand{\angle}{\hmatrix{\theta}}
 \newcommand{\error}{\hmatrix{e}}
+\newcommand{\pixelvariance}{\hmatrix{\Sigma}}
+\newcommand{\covariance}{\hmatrix{C}}
+\newcommand{\Normal}{\mathscr{N}}
 \newcommand{\exptime}{t}
 
 \begin{document}
 
+\paragraph{Introduction:}
 In a modern spectrograph, light from fibers or slits is dispersed onto
 a two-dimensional CCD or CCD-like detector, with (usually) one
 direction on the detector corresponding to an angular displacement on
@@ -82,6 +91,7 @@ situations.  We will try to keep the discussion general, but where we
 need to get specific we will work with the data from the SDSS-III BOSS
 spectrographs.
 
+\paragraph{General framework:}
 Our generative model for the data---for a science exposure or data
 taken of astronomical targets---is that the column vector $\pixels_i$
 of pixel values in exposure $i$ can be expressed as a sum of the
@@ -129,18 +139,95 @@ angular position $\angle_j$ of aperture $j$, and the column vector
 $\lamp(\angle_j)$ lists the flux density values for a flat-field lamp,
 again with slow angular variations.
 
+Each error vector $\error_i$ is assumed to be drawn from a gaussian
+distribution with a variance tensor $\pixelvariance_i$ that is
+diagonal:
+\begin{equation}
+p(\error_i) =\Normal(\error_i|\zero,\pixelvariance_i) \quad,
+\end{equation}
+where $p(\error_i)$ represents a frequency distribution for the error
+vector, and $\Normal(x|m,V)$ is the Gaussian or normal distribution
+given a mean $m$ and a variance $V$.  The expectation that the
+variance tensor $\pixelvariance_i$ be (close to) diagonal is
+equivalent to the expectation that the pixel-to-pixel noise
+contributions be (close to) independent and uncorrelated.  Each pixel
+will have a different individual noise variance, depending on its
+particular amplifier characteristics, dark current, and illumination
+in the particular exposure, so the diagonal elements of
+$\pixelvariance_i$ will all be different in general.  Furthermore, the
+variance tensor $\pixelvariance_i$ will be different for different
+exposures $i$ because, in general, the illumination and exposure times
+will be different.
+
 Our problem is to infer from these data---science exposures, biases,
 darks, arcs, and flats---all of the matrices $\Amatrix_j$ for all of
 the apertures $j$.
 
-We will assume smoothness in various things.
+\paragraph{Extraction:}
+Although extraction is \emph{not} the primary goal of this project,
+but rather the inference of the calibration matrices $\Amatrix_j$, it
+is worth saying a few words about optimal extraction.  What we say
+here is largely in response to the Bolton \& Schlegel contribution,
+which is, to our knowledge, the most sophisticated treatment of the
+problem to date.  To paraphrase, in this contribution, they recommend
+choosing a wavelength grid such that the matrices
+\begin{equation}
+\inverse{\covariance_{ij}} \equiv
+  \transpose{\Amatrix_j}\,\inverse{\pixelvariance_i}\,\Amatrix_j
+\end{equation}
+are invertible, computing vectors
+\begin{equation}
+\fluxLSF_j \equiv
+  \inverse{[\transpose{\Amatrix_j}\,\inverse{\pixelvariance_i}\,\Amatrix_j]}
+  \,\transpose{\Amatrix_j}\,\inverse{\pixelvariance_i}\,\pixels_i \quad ,
+\end{equation}
+and then smoothing the vectors $\fluxLSF_j$ to make new vectors that
+have uncorrelated errors (diagonal covariance).  This methodology is
+``optimal'' in that the flux vectors $\fluxLSF_j$ are the
+maximum-likelihood flux vectors given the pixel data $\pixels_i$; the
+smoothing is just a (bad) method for handling the ``ringing'' that
+occurs because neighboring pixels tend to be strongly anti-correlated
+in any simple point estimate of the flux.
 
-We will specialize to BOSS spectra for now.
+[SAM: Do I have my $\pixelvariance_i$ matrices in the right places?---DWH]
 
-We will assume that each plate is not independent but has $\Amatrix$
-drawn from some compact distribution.
+[SAM: What I have written above and below \emph{must be wrong} because
+  there is also sky $\sky_i$.  I need to fix that.---DWH]
 
-We will assume that lamps and skies and arcs are not infinitely
-variable from plate to plate and night to night.
+There are a number of issues with this method for optimal extraction.
+One issue is that if extraction is asked to obey the rules of
+probabilistic inference, it ought to return a (posterior) probability
+distribution over spectra and not a single point estimate of each
+spectrum.  The second is that the smoothing step is only the best
+thing to do for certain very specific projects where the investigator
+cannot carry forward covariance information, or the investigator is
+uninterested in marginalization over uncertainties.  Neither of these
+conditions is met for the general spectroscopic user, and in
+particular for our purposes, neither is met for the investigators who
+are expected to perform the precise measurements that form the primary
+science goals of the BOSS survey.
+
+Fortunately, when errors are normally distributed, if we also place
+uninformative normal priors on the spectra, it is straightforward to
+compute analytically the full posterior distribution for each spectrum
+$\flux_j$: The posterior will be
+\begin{equation}
+p(\flux_j|\pixels_i,\pixelvariance_i,I) =
+  \Normal(\flux_j|\fluxLSF_j,\covariance_{ij}) \quad,
+\end{equation}
+where we have assumed that the priors are almost totally
+uninformative; in this case the least-squares solution developed above
+becomes the mean, and the least-squares covariance matrix becomes the
+variance of the posterior, which is exactly a (high-dimensional)
+normal distribution.  Note that the variance tensor $\covariance_{ij}$
+will \emph{not} in general be diagonal, although if the data are good,
+it will be very sparse.
+
+\paragraph{Inferring the matrices $\Amatrix_j$:}
+We will assume smoothness in various things.  We will specialize to
+BOSS spectra for now.  We will assume that each plate is not
+independent but has matrices $\Amatrix_j$ drawn from some compact
+distribution. We will assume that lamps and skies and arcs are not
+infinitely variable from plate to plate and night to night.
 
 \end{document}

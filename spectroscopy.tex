@@ -127,7 +127,7 @@ written
 p_{ik} = b_k + \exptime_i\,d_k
        + \exptime_i\,\sum_{j,\ell} A_{jk\ell}\,f_{j\ell}
        + \exptime_i\,\sum_{j,\ell} A_{jk\ell}\,s_{i\ell}(\angle_j)
-       + e_{ik} \quad ,
+       + e_{ik} \quad .
 \end{equation}
 
 There are also bias, dark, arc, and flat frames, which in our model
@@ -210,8 +210,6 @@ the maximum-likelihood flux vectors given the pixel data $\pixels_i$;
 the smoothing is just a linear method for handling the ``ringing''
 that occurs because neighboring pixels tend to be strongly
 anti-correlated in any simple point estimate of the flux.
-
-[SAM: Do I have my $\pixelvariance_i$ matrices in the right places?---DWH]
 
 There are a number of issues with this method for optimal extraction.
 One issue is that if extraction is asked to obey the rules of

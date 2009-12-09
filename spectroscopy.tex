@@ -79,7 +79,7 @@ with small spectral apertures so that we don't have to model the
 aperture illumination in detail.  In index notation, this relation
 could be written
 \begin{equation}
-\Delta p_k = \exptime\,\sum_{\ell} A_{k\ell},f_{\ell} \quad ,
+\Delta p_k = \exptime\,\sum_{\ell} A_{k\ell}\,f_{\ell} \quad ,
 \end{equation}
 where the index $k$ goes over image pixels (the two-dimensional array
 has been ``unwrapped'' into a one-dimensional list), and the index
@@ -152,7 +152,8 @@ probably modeled as a mixture of narrow emission lines at known
 wavelengths, but permitted to vary in intensities slowly with the
 angular position $\angle_j$ of aperture $j$, and the column vector
 $\lamp(\angle_j)$ lists the flux density values for a flat-field lamp,
-again with slow angular variations.
+probably modeled as a very smooth function or a mixture of
+near-blackbodies, and again with slow angular variations.
 
 Each error vector $\error_i$ is assumed to be drawn from a gaussian
 distribution with a variance tensor $\pixelvariance_i$ that is
@@ -269,10 +270,47 @@ The expressions for the pixel values $p_{ik}$ are linear in the object
 fluxes $f_{j\ell}$; this makes optimal extraction practical.  They are
 also linear in the matrix elements $A_{jk\ell}$; this makes inference
 of the matrices $\Amatrix_j$ practical, as we will demonstrate here.
-We will assume smoothness in various things.  We will specialize to
-BOSS spectra for now.  We will assume that each plate is not
-independent but has matrices $\Amatrix_j$ drawn from some compact
-distribution. We will assume that lamps and skies and arcs are not
-infinitely variable from plate to plate and night to night.
+
+If everything is well sampled, we expect the matrices to be
+``smooth''.  That is, we expect matrix rows and columns to be similar:
+\begin{eqnarray}\displaystyle
+A_{jk\ell} & \approx & A_{jk[\ell+1]} \\
+A_{jk\ell} & \approx & A_{j[k+1]\ell} \\
+A_{jk\ell} & \approx & A_{j[k+n]\ell} \quad ,
+\end{eqnarray}
+where $n$ is some kind ``unfolding length'' of the pixels from
+two dimensions (the CCD array) to one dimension (the column vector
+$\pixels$); the idea is that pixel $k$ has neighbor $[k+1]$ in one
+direction on the CCD, and $[k+n]$ in an orthogonal direction.  We
+expect---in the BOSS spectrographs and many other situations of
+integral-field or multi-object spectrographs---adjacent spectroscopic
+apertures to be similar, that is:
+\begin{equation}
+A_{jk\ell} \approx A_{[j+1][k+\delta]\ell} \quad ,
+\end{equation}
+where $\delta$ is the pixel displacement (in the one-dimensional,
+unwrapped pixel ordering) between adjacent spectra.  In general,
+$\delta$ will depend on $j$.  We expect the vast majority of the
+elements of the matrices $\Amatrix_j$ to be zero---that is, we expect
+that most pixels $k$ are very far from the detector footprint of
+spectrum $j$.  Finally, we expect every element of every vector and
+matrix in our entire problem to be positive: There are only positive
+fluxes, positive electron numbers in the CCD, and positive
+relationships between them.  Our challenge is to write down all of
+these prior expectations in a (possibly approximate) Gaussian form
+such that when we perform the inference, we can still use all the
+convenient and fast machinery of convex, linear optimization.
+
+In the above, we have assumed that the matrices $\Amatrix_j$ are all
+identical for all the exposures under consideration.  Of course we do
+expect some variations in these matrices from exposure to exposure
+(from, for example, flexure in the spectrographs and atmospheric
+transparency) and from month to month (from, for example, detector
+decay, fiber damage, and dust build-up on the mirrors).  We want to
+permit variation in the matrices but not arbitrary variation.  That
+suggests going hierarchical?  Similarly, the sky, flatfield lamps, and
+arc lamps will vary over time but again, not arbitrarily.  Our
+challenge is to discover the variability and then implement priors
+that once again respect convexity and linearity.
 
 \end{document}

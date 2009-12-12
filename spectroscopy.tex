@@ -271,8 +271,9 @@ fluxes $f_{j\ell}$; this makes optimal extraction practical.  They are
 also linear in the matrix elements $A_{jk\ell}$; this makes inference
 of the matrices $\Amatrix_j$ practical, as we will demonstrate here.
 
-If everything is well sampled, we expect the matrices to be
-``smooth''.  That is, we expect matrix rows and columns to be similar:
+Our weakest possible expectation about the matrices $\Amatrix_j$ is
+that they be ``smooth'' in certain ways.  For example, we expect
+neighboring matrix rows and columns to be similar:
 \begin{eqnarray}\displaystyle
 A_{jk\ell} & \approx & A_{jk[\ell+1]} \\
 A_{jk\ell} & \approx & A_{j[k+1]\ell} \\
@@ -296,21 +297,39 @@ that most pixels $k$ are very far from the detector footprint of
 spectrum $j$.  Finally, we expect every element of every vector and
 matrix in our entire problem to be positive: There are only positive
 fluxes, positive electron numbers in the CCD, and positive
-relationships between them.  Our challenge is to write down all of
-these prior expectations in a (possibly approximate) Gaussian form
-such that when we perform the inference, we can still use all the
-convenient and fast machinery of convex, linear optimization.
+relationships between them.
 
-In the above, we have assumed that the matrices $\Amatrix_j$ are all
-identical for all the exposures under consideration.  Of course we do
-expect some variations in these matrices from exposure to exposure
-(from, for example, flexure in the spectrographs and atmospheric
-transparency) and from month to month (from, for example, detector
-decay, fiber damage, and dust build-up on the mirrors).  We want to
-permit variation in the matrices but not arbitrary variation.  That
-suggests going hierarchical?  Similarly, the sky, flatfield lamps, and
-arc lamps will vary over time but again, not arbitrarily.  Our
-challenge is to discover the variability and then implement priors
-that once again respect convexity and linearity.
+We have stronger expectations than these, however.  We expect each
+matrix $\Amatrix_j$ to describe something like a one-dimensional
+spectral trace along the detector, convolved with a spatially varying,
+pixel-convolved point-spread function.  That is, we expect to be able
+to model the matrix with parameters only of the one-dimensional curve
+that describes the wavelength-dependence and position of the spectral
+trace for aperture $j$ plus parameters of a point-spread function and
+its (presumably slow) variations with detector position.  This model
+ought to be a good description of the optical properties of the
+spectrograph---if the trace and point-spread function are given
+appropriate freedom---but it will not be able to capture significant
+pixel-to-pixel variations in the CCD sensitivity.  If these are
+significant, they will have to be modeled with additional parameters.
+In addition, we expect the traces to be low-order curves, and we
+expect the PSF to be non-negative, smooth, and centrally peaked.  All
+our prior expectations ought to be encoded in prior probability
+distribution functions for parameters, preferably in a form that
+preserves all the benefits of having a convex, quadratic optimization
+problem.
+
+In the above, we have---by omission really---assumed that the matrices
+$\Amatrix_j$ are all identical for all the exposures under
+consideration.  Of course we do expect some variations in these
+matrices from exposure to exposure (from, for example, flexure in the
+spectrographs and atmospheric transparency) and from month to month
+(from, for example, detector decay, fiber damage, and dust build-up on
+the mirrors).  We want to permit variation in the matrices but not
+arbitrary variation.  That suggests going hierarchical?  Similarly,
+the sky, flatfield lamps, and arc lamps will vary over time but again,
+not arbitrarily.  Our challenge is to discover the variability and
+then implement priors that once again respect convexity and quadratic
+form.
 
 \end{document}

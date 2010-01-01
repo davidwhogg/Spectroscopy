@@ -217,6 +217,11 @@ the smoothing is just a linear method for handling the ``ringing''
 that occurs because neighboring pixels tend to be strongly
 anti-correlated in any simple point estimate of the flux.
 
+DWH: Write the more important point that the chi-squared against the
+smoothed flux vectors is close to identical to the chi-squared against
+the raw pixels; in fact open with this if it is not totally clear in
+the final version of Bolton \& Schlegel.
+
 There are a number of issues with this method for optimal extraction.
 One issue is that if extraction is asked to obey the rules of
 probabilistic inference, it ought to return a (posterior) probability
@@ -270,12 +275,7 @@ cosmic-ray hits (manually set individual pixel variance elements
 $\Sigma_{ik}$ to large values at pixels $k$ that are likely to have
 been affected by cosmic-ray hits) in a prior step.
 
-\paragraph{Inferring the matrices $\Amatrix_j$:}
-The expressions for the pixel values $p_{ik}$ are linear in the object
-fluxes $f_{j\ell}$; this makes optimal extraction practical.  They are
-also linear in the matrix elements $A_{jk\ell}$; this makes inference
-of the matrices $\Amatrix_j$ practical, as we will demonstrate here.
-
+\paragraph{Priors on the matrices $\Amatrix_j$:}
 Our weakest possible expectation about the matrices $\Amatrix_j$ is
 that they be ``smooth'' in certain ways.  For example, we expect
 neighboring matrix rows and columns to be similar:
@@ -324,6 +324,8 @@ distribution functions for parameters, preferably in a form that
 preserves all the benefits of having a convex, quadratic optimization
 problem.
 
+DWH: Get explicit about priors on traces and PSFs
+
 In the above, we have---by omission really---assumed that the matrices
 $\Amatrix_j$ are all identical for all the exposures under
 consideration.  Of course we do expect some variations in these
@@ -336,5 +338,11 @@ the sky, flatfield lamps, and arc lamps will vary over time but again,
 not arbitrarily.  Our challenge is to discover the variability and
 then implement priors that once again respect convexity and quadratic
 form.
+
+\paragraph{Inferring the matrices $\Amatrix_j$:}
+The expressions for the pixel values $p_{ik}$ are linear in the object
+fluxes $f_{j\ell}$; this makes optimal extraction practical.  They are
+also linear in the matrix elements $A_{jk\ell}$; this makes inference
+of the matrices $\Amatrix_j$ practical, as we will demonstrate here.
 
 \end{document}

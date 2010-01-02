@@ -1,7 +1,8 @@
 % to-do
 % -----
+% - search for occurences of ``SAM'' and ``DWH'' in text for in-line to-dos
 % - DWH: words about what extraction does and should return
-% - DWH: describe model for trace and psf, priors on psf, psf variation, etc
+% - DWH: describe model for psf, priors on psf, psf variation, etc
 
 \documentclass[12pt]{article}
 \usepackage{amssymb,amsmath,mathrsfs,color,hyperref}
@@ -54,9 +55,7 @@ images.  There is a literature on ``optimal extraction'' of these
 one-dimensional spectra; the best extraction methods treat the
 two-dimensional image pixels as data to be fit by a model that
 consists of a one-dimensional spectrum laid out geometrically on the
-device and convolved with a two-dimensional point-spread function
-(which might be a function of the atmospheric seeing or the device
-properties or both).
+device and convolved with a two-dimensional point-spread function.
 
 Although the optimal extraction literature solves some important
 problems, the hardest part of spectroscopic data reduction lies not in
@@ -79,16 +78,26 @@ wavelength values coming from that astronomical object.  In this
 description, each element of the matrix $\Amatrix$ gives the rate of
 change of a particular pixel in the two-dimensional detector in
 response to unit flux density at a particular wavelength from the
-source.  For simplicity, we will imagine having fiber or slit spectra
-with small spectral apertures so that we don't have to model the
-aperture illumination in detail.  In index notation, this relation
-could be written
+source.  In index notation, this relation could be written
 \begin{equation}
 \Delta p_k = \exptime\,\sum_{\ell} A_{k\ell}\,f_{\ell} \quad ,
 \end{equation}
 where the index $k$ goes over image pixels (the two-dimensional array
 has been ``unwrapped'' into a one-dimensional list), and the index
 $\ell$ goes over wavelengths $\lambda_{\ell}$.
+
+For simplicity, we will imagine having fiber or slit spectra with
+small spectral apertures so that we don't have to model the aperture
+illumination in detail.  This assumption seems restrictive, but it is
+fact completely general: If the slit is large enough that this is not
+true, the analysis can be performed with the slit artificially
+``divided up'' into a set of adjacent pixels or apertures.  The
+``sources'' illuminating these pixels would of course be the same
+source, convolved with the point-spread function, and the spectral
+traces from these sources would of course overlap significantly on the
+detector.  It would be sensible to put the knowledge of these
+relationships into the inference to improve performance, but it
+doesn't change anything fundamental about the inference.
 
 In what follows, we develop a method for inferring this matrix
 $\Amatrix$, which contains almost all of the calibration information
@@ -324,7 +333,36 @@ distribution functions for parameters, preferably in a form that
 preserves all the benefits of having a convex, quadratic optimization
 problem.
 
-DWH: Get explicit about priors on traces and PSFs
+Specifically, smoothness on the traces can be enforced by requiring
+that the two-dimensional detector position $(x,y)$ of the point in the
+one-dimensional trace corresponding to wavelength $\lambda$ be a
+$M$th-order polynomial in $\lambda$;
+\begin{eqnarray}\displaystyle
+x_j(\lambda) & = & c_{j0} + c_{j1}\,\lambda + c_{j2}\,\lambda^2 + \cdots + c_{jM}\,\lambda^M \\
+y_j(\lambda) & = & d_{j0} + d_{j1}\,\lambda + d_{j2}\,\lambda^2 + \cdots + d_{j
+M}\,\lambda^M \quad .
+\end{eqnarray}
+Additionally, in the case of fibers regularly placed on the
+spectrograph slit, or pixels in an integral field laid out regularly
+in the spectrograph focal plane, there are smoothness considerations
+of the form:
+\begin{eqnarray}\displaystyle
+c_{j0} & \approx & c_{[j+1]0} + \delta x \\
+c_{jm} & \approx & c_{[j+1]m} \quad \mbox{(for $m > 0$)} \quad ,\\
+\end{eqnarray}
+where $\delta x$ is the $x$-displacement on the detector between
+adjacent apertures (which in general depends on $j$), and there are
+similar relations for the $d_{jm}$.  To make these priors
+well-specified and tractable, we will assume that we can treat the
+differences
+\begin{equation}
+\delta c_{jm} \equiv c_{[j+1]m} - c_{jm}
+\end{equation}
+as if they drawn from Gaussians of mean $\delta x$ (for $m=0$) or $0$
+(for $m>0$) and some small variances to be chosen in some hierarchical
+or sensible way.
+
+DWH: Get explicit about priors on PSFs
 
 In the above, we have---by omission really---assumed that the matrices
 $\Amatrix_j$ are all identical for all the exposures under
@@ -344,5 +382,12 @@ The expressions for the pixel values $p_{ik}$ are linear in the object
 fluxes $f_{j\ell}$; this makes optimal extraction practical.  They are
 also linear in the matrix elements $A_{jk\ell}$; this makes inference
 of the matrices $\Amatrix_j$ practical, as we will demonstrate here.
+
+\paragraph{Discussion}
+DWH: Discuss in more detail the issues of strongly overlapping
+spectra, for example when the slit is large and has been split up
+artificially into sub-apertures, or when there are slitless spectra.
+SAM: We should analyze some slitless spectra from HST or Chandra; they
+are awesome!
 
 \end{document}

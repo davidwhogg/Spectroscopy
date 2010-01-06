@@ -347,14 +347,14 @@ spectrograph slit, or pixels in an integral field laid out regularly
 in the spectrograph focal plane, there are smoothness considerations
 of the form:
 \begin{eqnarray}\displaystyle
-c_{j0} & \approx & c_{[j+1]0} + \delta x \\
+c_{j0} & \approx & c_{[j+1]0} - \delta x \\
 c_{jm} & \approx & c_{[j+1]m} \quad \mbox{(for $m > 0$)} \quad ,
 \end{eqnarray}
-where $\delta x$ is the $x$-displacement on the detector between
-adjacent apertures (which in general depends on $j$), and there are
-similar relations for the $d_{jm}$.  To make these priors
-well-specified and tractable, we will assume that we can treat the
-differences
+where $\delta x$ is the typical or designed or expected
+$x$-displacement on the detector between adjacent apertures (which in
+general depends on $j$), and there are similar relations for the
+$d_{jm}$.  To make these priors well-specified and tractable, we will
+assume that we can treat the differences
 \begin{equation}
 \delta c_{jm} \equiv c_{[j+1]m} - c_{jm}
 \end{equation}
@@ -374,8 +374,7 @@ the mirrors).  We want to permit variation in the matrices but not
 arbitrary variation.  That suggests going hierarchical?  Similarly,
 the sky, flatfield lamps, and arc lamps will vary over time but again,
 not arbitrarily.  Our challenge is to discover the variability and
-then implement priors that once again respect convexity and quadratic
-form.
+then implement priors that describe it.
 
 \paragraph{Inferring the matrices $\Amatrix_j$:}
 The expressions for the pixel values $p_{ik}$ are linear in the object

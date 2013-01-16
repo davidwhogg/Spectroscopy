@@ -13,7 +13,8 @@ Authors
 Notes
 -----
 
-Migrated from the <http://Astrometry.net/> `svn` with the commands
+Migrated from the <http://Astrometry.net/> svn repository with the commands
+
     cd
     git svn clone svn+ssh://astrometry.net/svn/trunk/documents/papers/spectroscopy/ --no-minimize-url --authors-file ~/authors
     cd spectroscopy/

@@ -1,0 +1,139 @@
+\documentclass[11pt]{article}
+
+\newcommand{\given}{\,|\,}
+\newcommand{\setof}[1]{\left\{{#1}\right\}}
+
+\newcommand{\foreign}[1]{\textsl{#1}}
+\newcommand{\instrument}[1]{\textsl{#1}}
+\newcommand{\Gaia}{\instrument{Gaia}}
+\newcommand{\RVS}{\instrument{RVS}}
+
+\begin{document}
+
+\section*{Extracting CTE-clean spectra from the \Gaia\ \RVS}
+\noindent
+by DWH
+
+\begin{abstract}
+
+The \Gaia~\RVS\ data will suffer from observable distortions (CTE)
+caused by radiation damage and the charge traps that are caused
+thereby.
+The \RVS\ team is creating empirical models of the time-dependent
+distortions.
+These models are computationally feasible to ``run forward''; indeed
+parameter estimation (radial velocities, temperatures, and so on)
+based on the \RVS\ will be based on a forward model of the data,
+including the CTE.
+Here we show that it is possible to extract CTE-undistorted spectra
+from either single epochs or else multiple epochs of \RVS\ data using
+one of these CTE models.
+There is no need to ``undistort'' or ``correct'' the data.
+Inasmuch as these extracted spectra and their uncertainty tensors will
+be close to sufficient statistics for the raw data, they could be used
+for stellar parameter estimation.
+\end{abstract}
+
+The \RVS\ obtains, during the \Gaia\ mission, $N$ epochs or
+observations $y_n$ on some star.
+Each observation $y_n$ is some patch or window of pixels, so it can be
+thought of as a $D$-dimensional blob or column vector.
+At each epoch $n$, there is a parameterized model of the
+\RVS\ instrument such that a True\footnote{I am using ``True'' in
+  keeping with my rules at GaiaCal 2014.} spectrum $x_n$ can be
+projected into the data space by some function $F$, which has
+parameters $\alpha_n$.
+These parameters include all the CTE parameters, but also the
+astrometric and spectrograph trace/mapping and line-spread and
+point-spread function parameters.
+That is, the model is
+\begin{eqnarray}
+y_n &=& F(x_n\given \alpha_n) + \mbox{noise}
+\quad,
+\end{eqnarray}
+where ``noise'' indicates something to be discussed below.
+
+The True spectrum $x_n$ is some high-resolution description of the
+flux density from the source as a function of wavelength $\lambda$.
+In any implementation, the basis for this description must be chosen.
+One example of a basis would be delta functions or top-hats on a grid
+of wavelengths, such that the $x_n$ is a vector of flux-density values
+on a grid.
+Interestingly, everything said here (below) can be extended to a
+(literally) infinite basis, with appropriate regularization and some
+simple mathematical realizations, but that is beyond the current
+scope.
+Another good basis would be something that is a set of orthonormal
+bases that are either tuned to capture the variations of stars or else
+tuned to the information content of \RVS\ data.
+However, the pixel-grid basis is such a simple idea (and in tune with
+the astronomical \foreign{zeitgeist}), let's stick with that for now.
+As for pixel spacing or pixel number, it doesn't matter much, so long
+as the spacing is \emph{smaller} than the \RVS\ wavlength resolution
+$\Delta\lambda$.
+There are some additional good properties in what follows if it
+happens that the \RVS\ data $y_n$ should fully resolve (in a Nyquist
+sense) the True spectrum $x_n$; this means that the $x_n$ should
+probably be represented as a mixture of sinc functions or Lanczos
+kernels or something like that.
+That said, a grid of delta-function pixels at the same spacing as the
+\RVS\ native pixel scale would be a fine choice and work fine, in my
+experience in similar problems.
+
+A probabilistic model is a likelihood function and some priors.
+In what follows, almost everything that matters is the likelihood
+function, although weak priors might be useful to regularize the
+fitting or optimization that follows.
+Imagining that most \RVS\ spectra obtain tens of photons per pixel, a
+Gaussian noise model will be a good approximation.
+In this case, the likelihood function is:
+\begin{eqnarray}
+p(y_n\given x_n, \alpha_n) &=& N(y_n\given \mu_n, C_n)
+\\
+\mu_n &\equiv& F(x_n\given \alpha_n)
+\quad ,
+\end{eqnarray}
+where $N(x\given m,V)$ is the $D$-dimensional Gaussan pdf given mean
+$m$ and variance tensor $V$, and $C_n$ is the relevant noise or
+uncertainty tensor (covariance matrix) for data vector $y_n$.
+In the case that the \RVS\ pixels obtain independent noise
+contributions (probably not a bad approximation, even in the presence
+of the CTE distortion, but I don't know), $C_n$ is a diagonal tensor
+with pixel variances on the diagonal.
+
+...Find maximum-likelihood $x_n$... Or maybe MAP under light priors.
+
+...Compute uncertainty tensor.
+
+...Issues about the noise model...known or modeled?.. Gaussian or
+Poisson?
+
+...If the spectral variability is known...simple models include no
+variability or just velocity changes...what do you do?
+
+...In principle $\setof{v_n}$ can be modeled simultaneously with the
+$\setof{x_n}$
+
+...What do do if we require marginalization (of an noise model or else
+the $\setof{v_n}$) is required?  We can use MCMC so long as we
+decorate chains with likelihoods for likelihood function
+reconstruction.
+
+In the end, what is proposed here is essentially what must be being
+done by the \RVS\ team to get stellar parameters.
+The only difference is that the true spectrum $x_n$ has been treated
+here as a completely free function of wavelength, whereas in parameter
+estimation, the spectrum was generated by some highly constrained
+stellar model.
+This is not a significant conceptual difference; indeed the inference
+used to constrain stellar parameters could in principle happen
+\emph{after} the spectrum extraction proposed here.
+This would not even be approximate, if the extracted spectra are
+``sufficient statistics'' for the raw data.
+It is my guess that they are \emph{very close} to being sufficient
+statistics, and therefore that the \RVS\ team \emph{could} perform
+one-dimensional spectrum extractions as described here, and then
+perform all stellar parameter estimation on those extracted spectra
+and their associated uncertainty tensors.
+
+\end{document}

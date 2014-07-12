@@ -1,4 +1,4 @@
-all: spectroscopy.pdf
+all: spectroscopy.pdf gaia_rvs.pdf
 
 %.pdf: %.tex
 	pdflatex $<

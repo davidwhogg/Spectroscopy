@@ -95,18 +95,18 @@ p(y_n\given x_n, \alpha_n) &=& N(y_n\given \mu_n, C_n)
 \end{eqnarray}
 where $N(x\given m,V)$ is the $D$-dimensional Gaussan pdf given mean
 $m$ and variance tensor $V$, and $C_n$ is the relevant noise or
-uncertainty tensor (covariance matrix) for data vector $y_n$.
-In the case that the \RVS\ pixels obtain independent noise
-contributions (probably not a bad approximation, even in the presence
-of the CTE distortion, but I don't know), $C_n$ is a diagonal tensor
-with pixel variances on the diagonal.
+uncertainty tensor (covariance matrix) for data vector $y_n$.  In the
+case that the \RVS\ pixels obtain independent noise contributions
+(probably not a bad approximation, even in the presence of the CTE
+distortion, but I don't know; more in next paragraph), $C_n$ is a
+diagonal tensor with pixel variances on the diagonal.
+
+...Issues about the noise model...known or modeled?.. Gaussian or
+Poisson?.. Correlated in ways that depend on everything?
 
 ...Find maximum-likelihood $x_n$... Or maybe MAP under light priors.
 
 ...Compute uncertainty tensor.
-
-...Issues about the noise model...known or modeled?.. Gaussian or
-Poisson?
 
 ...If the spectral variability is known...simple models include no
 variability or just velocity changes...what do you do?

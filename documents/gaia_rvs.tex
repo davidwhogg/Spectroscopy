@@ -1,7 +1,12 @@
 \documentclass[11pt]{article}
+\usepackage{amsmath}
 
 \newcommand{\given}{\,|\,}
 \newcommand{\setof}[1]{\left\{{#1}\right\}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\inverse}[1]{{#1}^{\!-1}}
+\newcommand{\best}[1]{\widetilde{#1}}
+\DeclareMathOperator*{\argmax}{arg\,max}
 
 \newcommand{\foreign}[1]{\textsl{#1}}
 \newcommand{\instrument}[1]{\textsl{#1}}
@@ -78,11 +83,7 @@ $\Delta\lambda$.
 There are some additional good properties in what follows if it
 happens that the \RVS\ data $y_n$ should fully resolve (in a Nyquist
 sense) the True spectrum $x_n$; this means that the $x_n$ should
-probably be represented as a mixture of sinc functions or Lanczos
-kernels or something like that.
-That said, a grid of delta-function pixels at the same spacing as the
-\RVS\ native pixel scale would be a fine choice and work fine, in my
-experience in similar problems.
+have a spacing about as fine as the \RVS\ native pixel scale.
 
 A probabilistic model is a likelihood function and some priors.
 In what follows, almost everything that matters is the likelihood
@@ -107,20 +108,81 @@ diagonal tensor with pixel variances on the diagonal.
 
 Several issues arise at this stage, and I am not sure what factors are
 most relevant.
-If you are shot-noise dominated, your estimate of the noise $C_n$ will
-be a function of the expectation value of $y_n$, not the observed
-value of $y_n$.
+One is the following: If you are shot-noise dominated, your estimate
+of the noise $C_n$ will be a function of the expectation value of
+$y_n$, not the observed value of $y_n$.
 That is, the $C_n$ depend on the True spectrum $x_n$ and the
 parameters $\alpha_n$.
 This is no problem in principle, so long as the likelihood function
 includes all terms, and not just the term proportional to $\exp
 -\chi^2/2$.
+Another issue is that the CTE traps probably correlate the photon
+noise, so pixels are no longer independent with respect to shot noise.
+In detail, it might be possible to write down a generative model of
+the CTE-distorted spectra, but \emph{not possible} to write down a
+likelihood function at all!
+In arbitrarily covariant situations this can become the case; the
+truly arbitrary case cannot be described simply with a covariance
+matrix.
+If this is really the case, the Best Thing To Do is a form of
+approximate inference called Approximate Bayesian Computation.
+I don't recommend this, and I don't think you are really in this
+regime, since you are doing inference on astrophysical parameters
+anyway.
+If you can do the astrophysical parameter inference properly, then you
+can also extract spectra using the same kind of likelihood function.
+A third issue is that if the model has light correlations of the
+noise, which \emph{can} be modeled with a covariance matrix, you need
+to make a model or quantitative description of those.
+That is straightforward but not necessarily trivial.
 
-...is there a likelihood function at all, or just a generative model??
+Now the key idea is to \emph{maximize the likelihood} with respect to
+the True spectrum $x_n$:
+\begin{eqnarray}
+\best{x_n} &\leftarrow& \argmax_{x_n} p(y_n\given x_n, \alpha_n)
+\quad .
+\end{eqnarray}
+This $\best{x_n}$ will be the ``best'' True spectrum to explain the
+data.
+Alternatively, you can ``regularize'' by applying a light prior
+(perhaps something that very slighly prefers smooth spectra to spiky
+spectra); then you maximize the posterior pdf rather than the
+likelihood; this is a \emph{maximum a posteriori} or \emph{maximum
+  regularized likelihood} solution.
+In either case, the ``extracted spectrum'' for the data $y_n$ is the
+$x_n$ that maximizes a scalar objective based on the likelihood
+function.
 
-...Find maximum-likelihood $x_n$... Or maybe MAP under light priors.
+At high signal-to-noise, the likelihood function will look Gaussian
+(or the log likelihood will look parabolic).
+The inverse-variance tensor $\inverse{C_{xn}}$ uncertainty on the
+best-fit spectrum (inverse of the covariance matrix) is just a second
+derivative of the log likelihood:
+\begin{eqnarray}
+\inverse{C_{xn}} &\leftarrow&
+\left.\frac{\dd^2}{\dd x_n^2}\ln p(y_n\given x_n, \alpha_n)\right|_{\best{x_n}}
+\quad ,
+\end{eqnarray}
+where $C_{xn}$ is a $K\times K$ non-negative semi-definite matrix or
+tensor, and $K$ is the size of the basis in which the True spectra
+$x_n$ are represented.
+The Gaussian approximation to the likelihood surface will be pretty
+good, I expect, in real cases.
 
-...Compute uncertainty tensor.
+This is all a description of how to extract a \emph{single} spectrum
+$\best{x_n}$ given a single epoch $y_n$ of data.
+If the spectrum is \emph{not variable}, and if there are \emph{no velocity shifts}
+from epoch to epoch, and if the Gaussian (parabolic in log)
+approximation is good, the extracted spectra can just be combined to
+make an overall best spectrum in the usual way:
+\begin{eqnarray}
+\best{x} &\leftarrow& 
+\inverse{\left[\sum_n \inverse{C_{xn}}\right]}\cdot\left[\sum_n \inverse{C_{xn}}\cdot \best{x_n}\right]
+\end{eqnarray}
+that is, the best True spectrum $\best{x}$ is a tensor weighted
+average of all the epochs.
+
+Note that because the 
 
 ...If the spectral variability is known...simple models include no
 variability or just velocity changes...what do you do?

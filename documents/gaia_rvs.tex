@@ -52,6 +52,10 @@ y_n &=& F(x_n\given \alpha_n) + \mbox{noise}
 \quad,
 \end{eqnarray}
 where ``noise'' indicates something to be discussed below.
+The parameters $\alpha_n$ have a subscript $n$ because the parameters
+are presumed to be varying through the mission lifetime; the
+parameters $\alpha_n$ are the appropriate parameters for epoch $n$
+(that is, interpolated to time $t_n$).
 
 The True spectrum $x_n$ is some high-resolution description of the
 flux density from the source as a function of wavelength $\lambda$.
@@ -101,8 +105,18 @@ case that the \RVS\ pixels obtain independent noise contributions
 distortion, but I don't know; more in next paragraph), $C_n$ is a
 diagonal tensor with pixel variances on the diagonal.
 
-...Issues about the noise model...known or modeled?.. Gaussian or
-Poisson?.. Correlated in ways that depend on everything?
+Several issues arise at this stage, and I am not sure what factors are
+most relevant.
+If you are shot-noise dominated, your estimate of the noise $C_n$ will
+be a function of the expectation value of $y_n$, not the observed
+value of $y_n$.
+That is, the $C_n$ depend on the True spectrum $x_n$ and the
+parameters $\alpha_n$.
+This is no problem in principle, so long as the likelihood function
+includes all terms, and not just the term proportional to $\exp
+-\chi^2/2$.
+
+...is there a likelihood function at all, or just a generative model??
 
 ...Find maximum-likelihood $x_n$... Or maybe MAP under light priors.
 

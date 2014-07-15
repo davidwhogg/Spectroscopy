@@ -50,7 +50,7 @@ projected into the data space by some function $F$, which has
 parameters $\alpha_n$.
 These parameters include all the CTE parameters, but also the
 astrometric and spectrograph trace/mapping and line-spread and
-point-spread function parameters.
+point-spread function parameters, and also the throughput or vignetting parameters.
 That is, the model is
 \begin{eqnarray}
 y_n &=& F(x_n\given \alpha_n) + \mbox{noise}
@@ -131,7 +131,7 @@ regime, since you are doing inference on astrophysical parameters
 anyway.
 If you can do the astrophysical parameter inference properly, then you
 can also extract spectra using the same kind of likelihood function.
-A third issue is that if the model has light correlations of the
+A third issue is that if the model has light correlations in the
 noise, which \emph{can} be modeled with a covariance matrix, you need
 to make a model or quantitative description of those.
 That is straightforward but not necessarily trivial.
@@ -149,6 +149,11 @@ Alternatively, you can ``regularize'' by applying a light prior
 spectra); then you maximize the posterior pdf rather than the
 likelihood; this is a \emph{maximum a posteriori} or \emph{maximum
   regularized likelihood} solution.
+A sensible choice for this regularization is a prior that, in the log,
+is quadratic in differences between adjacent True-spectrum pixel
+values.  This doesn't break convexity in the simplest cases, and
+smooths out the results where the data are truly uninformative,
+without bringing in new assumptions.
 In either case, the ``extracted spectrum'' for the data $y_n$ is the
 $x_n$ that maximizes a scalar objective based on the likelihood
 function.
@@ -160,7 +165,7 @@ best-fit spectrum (inverse of the covariance matrix) is just a second
 derivative of the log likelihood:
 \begin{eqnarray}
 \inverse{C_{xn}} &\leftarrow&
-\left.\frac{\dd^2}{\dd x_n^2}\ln p(y_n\given x_n, \alpha_n)\right|_{\best{x_n}}
+\left.-\frac{\dd^2}{\dd x_n^2}\ln p(y_n\given x_n, \alpha_n)\right|_{\best{x_n}}
 \quad ,
 \end{eqnarray}
 where $C_{xn}$ is a $K\times K$ non-negative semi-definite matrix or
@@ -182,18 +187,24 @@ make an overall best spectrum in the usual way:
 that is, the best True spectrum $\best{x}$ is a tensor weighted
 average of all the epochs.
 
-Note that because the 
+If the object is varying in spectrum or velocity, then the best way to
+extract the True spectrum $\best{x}$ from the multi-epoch data is to
+make a joint model
+\begin{eqnarray}
+\best{x} &\leftarrow& \argmax_{x} \prod_n p(y_n\given x, v_n, \alpha_n)
+\quad ,
+\end{eqnarray}
+where $x$ is shared across all epochs, but there are parameters $v_n$
+that provide velocity or flux offsets from epoch to epoch.
+These offset parameters can either be determined independently prior
+to the fitting or else inferred simultaneously with $\best{x}$.
 
-...If the spectral variability is known...simple models include no
-variability or just velocity changes...what do you do?
-
-...In principle $\setof{v_n}$ can be modeled simultaneously with the
-$\setof{x_n}$
-
-...What do do if we require marginalization (of an noise model or else
-the $\setof{v_n}$) is required?  We can use MCMC so long as we
-decorate chains with likelihoods for likelihood function
-reconstruction.
+If the noise model is uncertain or if the $v_n$ are uncertain or if
+the $\alpha_n$ are uncertain, you might want to extract a maximum
+\emph{marginalized} likelihood spectrum $\best{x}$, marginalizing out
+the uncertainties in the nuisance parameters.
+This can be accomplished a number of ways, but the simplest is to put
+light priors on everything, and sample with MCMC.
 
 In the end, what is proposed here is essentially what must be being
 done by the \RVS\ team to get stellar parameters.

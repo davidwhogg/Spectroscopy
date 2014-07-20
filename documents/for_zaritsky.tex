@@ -1,0 +1,85 @@
+\documentclass[12pt, letterpaper]{article}
+
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\SDSS}{\project{SDSS}}
+
+\begin{document}
+
+\section*{Cross-correlations between nearby galaxies and H$\alpha$ photons}
+
+\noindent
+\textsl{by DWH for DZ}\\
+draft 2014-07-20
+
+\bigskip
+
+During a seminar by Kollmeier (OCIW) at NYU about the metagalactic
+(should be ``intergalactic'') radiation field, DZ suggested that we
+look for H$\alpha$ photons from the outskirts of low-redshift galaxies
+using the spectroscopic footprint of the \project{Sloan Digital Sky
+  Survey}.
+This document represents an attempt to make this project well-posed.
+The basic idea is to perform something akin to a galaxy--photon
+cross-correlation using lines of sight that are background to (higher
+redshift than) the low-redshift galaxy targets.
+
+What we want to compute (perhaps) is the mean intensity (energy per
+solid angle per area per time per wavelength) in the
+wavelength-vicinity of the H$\alpha$ line as a function of projected
+radius away from the center of each of or a set of low-redshift
+galaxies.
+
+What we need as inputs are the following:
+\begin{itemize}
+\item
+A list of nearby target galaxies $n$, each of which has a sky position
+$\theta_n$, a redshift $z_n$, and some kind of angular size $\phi_n$.
+These galaxies will be chosen to have redshifts such that $z_1 < z_n <
+z_2$, where $z_1$ and $z_2$ are some limits.  We will presume that the
+positions, redshifts, and angular sizes are well known.
+\item
+A list of background sources $m$, each of which has a sky position
+$\theta_m$, a redshift $z_m$, and an \SDSS\ spectrum $f_m$.  These
+background sources will be chosen to have redshifts $z_m > z_3$, where
+$z_3 > z_2$.  For each of these background sources, we will presume
+that there is not only an \SDSS\ spectrum $f_m$ but also some kind of
+model prediction $\mu_m$ (for the flux as a function of wavelength) so
+that we can get \SDSS\ data-minus-model residuals (we will need these
+soon).  Included in this list of background sources is all the
+\SDSS\ sky spectra, which have (effectively) infinite redshift and a
+model prediction of vanishing flux.
+\item
+A random catalog of ersatz target galaxies, each of which has a
+redshift and size drawn from the target galaxy list, but a random sky
+position drawn from the \SDSS\ footprint.
+\item
+A random catalog of ersatz background soures, each of which has a
+redshift and spectrum drawn from the background source list, but a
+random sky position drawn from the \SDSS\ footprint.
+\end{itemize}
+
+[yada yada]
+
+Unresolved or open issues include the following:
+\begin{itemize}
+\item
+Should we be doing work on the spectral pixels, or should we be doing
+work on some kind of line-intensity measurement on each spectrum, at
+the relevant H$\alpha$ wavelength?
+\item
+Should we do the statistical cross-correlation first, or should we try
+things out on a single object (low-redshift Milky-Way-like galaxy)
+first?  There is nothing about our plan that requires a large sample
+of targets.
+\item
+Should we adjust the method for galactic rotation curves, or can we
+assign one redshift to every galaxy?  Should we do anything at the
+spectrum level to deal with velocity gradients?
+\item
+What should be $z_1$, $z_2$, and $z_3$?  In principle, $z_1$ should be
+large enough that we don't get messed up by telluric H$\alpha$.  In
+principle, $z_3$ should be larger than $z_2$ by enough that we don't
+get overlapping H$\alpha$ lines.
+\end{itemize}
+
+\end{document}

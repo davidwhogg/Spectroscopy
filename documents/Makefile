@@ -1,4 +1,4 @@
-all: spectroscopy.pdf gaia_rvs.pdf
+all: spectroscopy.pdf gaia_rvs.pdf for_zaritsky.pdf
 
 %.pdf: %.tex
 	pdflatex $<
